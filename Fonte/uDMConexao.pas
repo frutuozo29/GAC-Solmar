@@ -6,7 +6,8 @@ uses
   System.SysUtils, System.Classes, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
   FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
   FireDAC.Phys.FBDef, FireDAC.Phys.IBBase, Data.DB, FireDAC.Comp.Client, FireDAC.VCLUI.Wait, FireDAC.Comp.UI,
-  FireDAC.Phys.IBDef, FireDAC.Phys.IB, FireDAC.Stan.StorageJSON, FireDAC.Stan.StorageXML, FireDAC.Stan.StorageBin;
+  FireDAC.Phys.IBDef, FireDAC.Phys.IB, FireDAC.Stan.StorageJSON, FireDAC.Stan.StorageXML, FireDAC.Stan.StorageBin,
+  FireDAC.Phys.MSSQLDef, FireDAC.Phys.ODBCBase, FireDAC.Phys.MSSQL;
 
 type
   TDMConexao = class(TDataModule)
@@ -17,6 +18,7 @@ type
     FDStanStorageBinLink1: TFDStanStorageBinLink;
     FDStanStorageXMLLink1: TFDStanStorageXMLLink;
     FDStanStorageJSONLink1: TFDStanStorageJSONLink;
+    FDPhysMSSQLDriverLink1: TFDPhysMSSQLDriverLink;
   private
     FEmpresaAC: String;
     FCodigoEmpresaAC: String;
@@ -53,9 +55,14 @@ uses uFuncoesIni, uInterfaceQuery;
 procedure TDMConexao.ConectaAC;
 begin
   // Carregando dados da conexão do AC a partir do arquivo .ini
+  if FDConnAC.Connected then
+    FDConnAC.Connected := False;
   FDConnAC.Params.Values['User_Name'] := TFuncoesIni.LerIni('BANCO_AC','User_Name');
   FDConnAC.Params.Values['Password'] := TFuncoesIni.LerIni('BANCO_AC','Pass');
   FDConnAC.Params.Values['Database'] := TFuncoesIni.LerIni('BANCO_AC','Database');
+  FDConnAC.Params.Values['Server'] := TFuncoesIni.LerIni('BANCO_AC','Server');
+  FDConnAC.Params.Values['DriveName'] := TFuncoesIni.LerIni('BANCO_AC','DriveName');
+  FDConnAC.DriverName := TFuncoesIni.LerIni('BANCO_AC','DriveName');
   try
     FDConnAC.Connected := True;
   Except

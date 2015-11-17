@@ -12,7 +12,8 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
   FireDAC.Phys.FBDef, FireDAC.Phys.IBBase,
   Data.DB, FireDAC.Comp.Client, System.UITypes, Vcl.Imaging.jpeg, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf,
-  FireDAC.DApt, FireDAC.Comp.DataSet, Vcl.Grids, Vcl.DBGrids;
+  FireDAC.DApt, FireDAC.Comp.DataSet, Vcl.Grids, Vcl.DBGrids,
+  FireDAC.Phys.MSSQLDef, FireDAC.Phys.ODBCBase, FireDAC.Phys.MSSQL;
 
 type
   TfConexaoBD = class(TfFormBase)
@@ -54,6 +55,10 @@ type
     Panel1: TPanel;
     Button1: TButton;
     Button2: TButton;
+    FDPhysMSSQLDriverLink1: TFDPhysMSSQLDriverLink;
+    cbSQLServer: TCheckBox;
+    edtserver: TEdit;
+    Label10: TLabel;
     procedure SpeedButton1Click(Sender: TObject);
     procedure cbUserPassDefaultClick(Sender: TObject);
     procedure btnConectarACClick(Sender: TObject);
@@ -66,7 +71,7 @@ type
   private
     { Private declarations }
     procedure Status;
-    function TestarConexao(User, Pass, Server, DataBase: String): Boolean;
+    function TestarConexao(User, Pass, DataBase: String; EhSQLServer: Boolean; Server: String = '127.0.0.1'): Boolean;
     procedure CarregaConfigBD;
   public
     { Public declarations }
@@ -86,11 +91,16 @@ begin
   inherited;
   if not DMConexao.FDConnAC.Connected then
   begin
-    if TestarConexao(edtUserAC.Text, edtSenhaAC.Text, '127.0.0.1',edtCaminhoAC.Text) then
+    if TestarConexao(edtUserAC.Text, edtSenhaAC.Text, edtCaminhoAC.Text, cbSQLServer.Checked, edtserver.Text) then
     begin
       TFuncoesIni.GravarIni('BANCO_AC', 'User_Name', edtUserAC.Text);
       TFuncoesIni.GravarIni('BANCO_AC', 'Pass', edtSenhaAC.Text);
       TFuncoesIni.GravarIni('BANCO_AC', 'Database', edtCaminhoAC.Text);
+      TFuncoesIni.GravarIni('BANCO_AC', 'Server', edtServer.Text);
+      if cbSQLServer.Checked then
+        TFuncoesIni.GravarIni('BANCO_AC', 'DriveName', 'MSSQL')
+      else
+        TFuncoesIni.GravarIni('BANCO_AC', 'DriveName', 'FB');
       DMConexao.ConectaAC;
       QueryEmpresa.Open;
     end;
@@ -113,7 +123,7 @@ begin
   inherited;
   if not DMConexao.FDConnGAC.Connected then
   begin
-    if TestarConexao(edtUserGAC.Text, edtSenhaGAC.Text, '127.0.0.1',edtCaminhoGAC.Text) then
+    if TestarConexao(edtUserGAC.Text, edtSenhaGAC.Text, edtCaminhoGAC.Text, False) then
     begin
       TFuncoesIni.GravarIni('BANCO_GAC', 'User_Name', edtUserGAC.Text);
       TFuncoesIni.GravarIni('BANCO_GAC', 'Pass', edtSenhaGAC.Text);
@@ -154,9 +164,16 @@ end;
 procedure TfConexaoBD.CarregaConfigBD;
 begin
   // Carregando dados da conexão do AC a partir do arquivo .ini
+  cbUserPassDefault.Checked := False;
   edtCaminhoAC.Text := TFuncoesIni.LerIni('BANCO_AC', 'Database');
   edtUserAC.Text := TFuncoesIni.LerIni('BANCO_AC', 'User_Name');
   edtSenhaAC.Text := TFuncoesIni.LerIni('BANCO_AC', 'Pass');
+  edtserver.Text := TFuncoesIni.LerIni('BANCO_AC', 'Server');
+  if TFuncoesIni.LerIni('BANCO_AC', 'DriveName') = 'MSSQL' then
+    cbSQLServer.Checked := True
+  else
+    cbSQLServer.Checked := False;
+
 
   // Carregando dados da conexão do GAC a partir do arquivo .ini
   edtCaminhoGAC.Text := TFuncoesIni.LerIni('BANCO_GAC', 'Database');
@@ -178,8 +195,8 @@ begin
     edtUserAC.Text := EmptyStr;
     edtSenhaAC.Text := EmptyStr;
   end;
-  edtUserAC.Enabled := not edtUserAC.Enabled;
-  edtSenhaAC.Enabled := not edtSenhaAC.Enabled;
+//  edtUserAC.Enabled := not edtUserAC.Enabled;
+//  edtSenhaAC.Enabled := not edtSenhaAC.Enabled;
 end;
 
 procedure TfConexaoBD.cbUserPassGACDefaultClick(Sender: TObject);
@@ -253,12 +270,17 @@ begin
   end;
 end;
 
-function TfConexaoBD.TestarConexao(User, Pass, Server,
-  DataBase: String): Boolean;
+function TfConexaoBD.TestarConexao(User, Pass, DataBase: String; EhSQLServer: Boolean;
+  Server: String = '127.0.0.1'): Boolean;
 begin
   FDConn.Params.Values['User_Name'] := User;
-  FDConn.Params.Values['Password'] := Pass;
-  FDConn.Params.Values['Database'] := DataBase;
+  FDConn.Params.Values['Password']  := Pass;
+  FDConn.Params.Values['Database']  := DataBase;
+  FDConn.Params.Values['Server'] := Server;
+  if EhSQLServer then
+    FDConn.DriverName := 'MSSQL'
+  else
+    FDConn.DriverName := 'FB';
   try
     FDConn.Connected := True;
     FDConn.Connected := False;

@@ -4,9 +4,7 @@ object DMConexao: TDMConexao
   Width = 428
   object FDConnAC: TFDConnection
     Params.Strings = (
-      'User_Name=sysdba'
-      'Password=masterkey'
-      'DriverID=FB')
+      'DriverID=MSSQL')
     LoginPrompt = False
     Left = 48
     Top = 24
@@ -15,9 +13,7 @@ object DMConexao: TDMConexao
     Params.Strings = (
       'User_Name=sysdba'
       'Password=masterkey'
-      'Database=C:\Projetos\GAC-Solmar\GAC.FDB'
       'DriverID=FB')
-    Connected = True
     LoginPrompt = False
     Left = 88
     Top = 80
@@ -42,5 +38,9 @@ object DMConexao: TDMConexao
   object FDStanStorageJSONLink1: TFDStanStorageJSONLink
     Left = 64
     Top = 144
+  end
+  object FDPhysMSSQLDriverLink1: TFDPhysMSSQLDriverLink
+    Left = 200
+    Top = 120
   end
 end

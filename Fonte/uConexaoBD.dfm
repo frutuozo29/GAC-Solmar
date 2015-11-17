@@ -2,11 +2,11 @@ inherited fConexaoBD: TfConexaoBD
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Conex'#227'o com Banco de Dados'
-  ClientHeight = 502
+  ClientHeight = 605
   ClientWidth = 518
   OnShow = FormShow
   ExplicitWidth = 524
-  ExplicitHeight = 530
+  ExplicitHeight = 633
   PixelsPerInch = 96
   TextHeight = 13
   object pnTop: TPanel
@@ -265,7 +265,7 @@ inherited fConexaoBD: TfConexaoBD
     Left = 0
     Top = 161
     Width = 518
-    Height = 96
+    Height = 92
     Align = alTop
     TabOrder = 1
     object Label2: TLabel
@@ -276,7 +276,7 @@ inherited fConexaoBD: TfConexaoBD
       Caption = 'Conex'#227'o com Fortes Cont'#225'bil'
     end
     object Label3: TLabel
-      Left = 3
+      Left = 175
       Top = 28
       Width = 45
       Height = 13
@@ -1627,12 +1627,18 @@ inherited fConexaoBD: TfConexaoBD
       Stretch = True
       Visible = False
     end
+    object Label10: TLabel
+      Left = 4
+      Top = 28
+      Width = 44
+      Height = 13
+      Caption = 'Servidor:'
+    end
     object edtUserAC: TEdit
       Left = 50
       Top = 49
       Width = 130
       Height = 21
-      Enabled = False
       TabOrder = 1
       Text = 'SYSDBA'
     end
@@ -1641,7 +1647,6 @@ inherited fConexaoBD: TfConexaoBD
       Top = 49
       Width = 130
       Height = 21
-      Enabled = False
       PasswordChar = '*'
       TabOrder = 2
       Text = 'masterkey'
@@ -1656,9 +1661,9 @@ inherited fConexaoBD: TfConexaoBD
       OnClick = btnConectarACClick
     end
     object edtCaminhoAC: TEdit
-      Left = 50
+      Left = 221
       Top = 25
-      Width = 439
+      Width = 268
       Height = 21
       TabOrder = 0
     end
@@ -1672,6 +1677,22 @@ inherited fConexaoBD: TfConexaoBD
       State = cbChecked
       TabOrder = 4
       OnClick = cbUserPassDefaultClick
+    end
+    object cbSQLServer: TCheckBox
+      Left = 222
+      Top = 71
+      Width = 130
+      Height = 17
+      Caption = 'Banco AC SQL Server'
+      TabOrder = 5
+    end
+    object edtserver: TEdit
+      Left = 50
+      Top = 25
+      Width = 118
+      Height = 21
+      TabOrder = 6
+      Text = '127.0.0.1'
     end
   end
   object Panel2: TPanel
@@ -3089,9 +3110,9 @@ inherited fConexaoBD: TfConexaoBD
   end
   object gridEmpresa: TDBGrid
     Left = 0
-    Top = 257
+    Top = 253
     Width = 518
-    Height = 207
+    Height = 314
     Align = alClient
     DataSource = dsEmpresa
     Options = [dgTitles, dgIndicator, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgCancelOnExit, dgMultiSelect, dgTitleClick, dgTitleHotTrack]
@@ -3119,7 +3140,7 @@ inherited fConexaoBD: TfConexaoBD
   end
   object Panel1: TPanel
     Left = 0
-    Top = 464
+    Top = 567
     Width = 518
     Height = 38
     Align = alBottom
@@ -3152,10 +3173,11 @@ inherited fConexaoBD: TfConexaoBD
   end
   object FDConn: TFDConnection
     Params.Strings = (
-      'User_Name=sysdba'
+      'Database=AG'
+      'User_Name=sa'
       'Password=masterkey'
-      'Database=C:\Fortes\AC\AC.FDB'
-      'DriverID=FB')
+      'Server=FTSDEVAG13'
+      'DriverID=MSSQL')
     LoginPrompt = False
     Left = 336
     Top = 8
@@ -3188,5 +3210,9 @@ inherited fConexaoBD: TfConexaoBD
     DataSet = QueryEmpresa
     Left = 216
     Top = 65526
+  end
+  object FDPhysMSSQLDriverLink1: TFDPhysMSSQLDriverLink
+    Left = 224
+    Top = 48
   end
 end
