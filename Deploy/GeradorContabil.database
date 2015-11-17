@@ -1,5 +1,0 @@
-[1]
-create table Teste(codigo integer, nome varchar(60));
-
-[2]
-create table Teste(codigo integer, nome varchar(60));

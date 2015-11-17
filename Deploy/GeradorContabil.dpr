@@ -22,7 +22,8 @@ uses
   ufMapPlanoContas in '..\Fonte\ufMapPlanoContas.pas' {fMapPlanoContas},
   uDMMapeamento in '..\Fonte\uDMMapeamento.pas' {DMMapeamento: TDataModule},
   uGeracaoArquivo in '..\Fonte\uGeracaoArquivo.pas' {fGeracaoArquivo},
-  uDMImportacao in '..\Fonte\uDMImportacao.pas' {DMImportacao: TDataModule};
+  uDMImportacao in '..\Fonte\uDMImportacao.pas' {DMImportacao: TDataModule},
+  ufSelRazao in '..\Fonte\ufSelRazao.pas' {fSelRazao};
 
 {$R *.res}
 
@@ -36,5 +37,6 @@ begin
   Application.CreateForm(TDMMapeamento, DMMapeamento);
   Application.CreateForm(TDMImportacao, DMImportacao);
   Application.CreateForm(TfPrincipal, fPrincipal);
+  Application.CreateForm(TfSelRazao, fSelRazao);
   Application.Run;
 end.

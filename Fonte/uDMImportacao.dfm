@@ -34,12 +34,19 @@ object DMImportacao: TDMImportacao
       '       LAN.VALOR_CREDITO, LAN.CODIGO_HISTORICO'
       'from PLANODECONTAS PDC'
       'inner join LANCAMENTOS LAN on LAN.CONTA_PLANOCONTAS = PDC.CONTA'
-      'where PDC.CODIGO_AC is not null'
+      'where PDC.CODIGO_AC is not null and LAN.CODIGO_IMPORTACAO = :LAN'
       
         'ORDER BY LAN.DATA, LAN.NUMERO_LANCAMENTO, LAN.VALOR_DEBITO, LAN.' +
         'VALOR_CREDITO')
     Left = 240
     Top = 80
+    ParamData = <
+      item
+        Name = 'LAN'
+        DataType = ftInteger
+        ParamType = ptInput
+        Value = Null
+      end>
     object QueryLancamentosCODIGO_AC: TStringField
       FieldName = 'CODIGO_AC'
       Origin = 'CODIGO_AC'

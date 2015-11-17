@@ -24,6 +24,7 @@ type
     QueryLancamentosCODIGO_HISTORICO: TStringField;
   private
     { Private declarations }
+    FCodigo: Integer;
     function getData(aTipo: String): String;
     function TrataData(aData: TDateTime): String;
     function GetCampoConta(aCampo, aConta: String): String;
@@ -31,7 +32,7 @@ type
     function GetValorTotalLancamento(const aLancamento: String): Double;
   public
     { Public declarations }
-    procedure Importar(aDir: String);
+    procedure Importar(aDir: String; aCod: Integer);
   end;
 
 var
@@ -66,7 +67,7 @@ begin
   Qry := AutoQuery.NewQuery('select ' + aTipo +
     '(LAN.DATA) from PLANODECONTAS PDC ' +
     ' inner join LANCAMENTOS LAN on LAN.CONTA_PLANOCONTAS = PDC.CONTA ' +
-    ' where PDC.CODIGO_AC is not null');
+    ' where PDC.CODIGO_AC is not null and LAN.CODIGO_IMPORTACAO = '+IntToStr(FCodigo));
   Qry.Open;
   Result := TrataData(Qry.Fields[0].AsDateTime);
 end;
@@ -84,7 +85,7 @@ begin
   end;
 end;
 
-procedure TDMImportacao.Importar(aDir: String);
+procedure TDMImportacao.Importar(aDir: String; aCod: Integer);
 var
   Arquivo: TStringList;
   valorGeral: Double;
@@ -159,6 +160,7 @@ var
 
   begin
     QueryLancamentos.Close;
+    QueryLancamentos.ParamByName('LAN').AsInteger := FCodigo;
     QueryLancamentos.Open;
 
     progress.Inicializa(QueryLancamentos.RecordCount);
@@ -209,6 +211,7 @@ var
 
 begin
   try
+    FCodigo := aCod;
     Arquivo := TStringList.Create;
     progress := TfImportacao.Create(Self);
     progress.Show;

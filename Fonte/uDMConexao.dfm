@@ -15,7 +15,9 @@ object DMConexao: TDMConexao
     Params.Strings = (
       'User_Name=sysdba'
       'Password=masterkey'
+      'Database=C:\Projetos\GAC-Solmar\GAC.FDB'
       'DriverID=FB')
+    Connected = True
     LoginPrompt = False
     Left = 88
     Top = 80

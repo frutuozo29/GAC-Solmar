@@ -5,7 +5,7 @@ inherited fGeracaoArquivo: TfGeracaoArquivo
   ClientHeight = 411
   ClientWidth = 493
   ExplicitWidth = 499
-  ExplicitHeight = 439
+  ExplicitHeight = 440
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
@@ -40,9 +40,9 @@ inherited fGeracaoArquivo: TfGeracaoArquivo
     object lblNomeArquivo: TLabel
       Left = 100
       Top = 6
-      Width = 108
+      Width = 153
       Height = 13
-      Caption = 'C:\Windows\system32'
+      Caption = 'C:\Projetos\GAC-Solmar\Deploy'
     end
     object lblNome: TLabel
       Left = 5
