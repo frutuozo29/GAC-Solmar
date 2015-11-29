@@ -15,6 +15,7 @@ inherited fSelRazao: TfSelRazao
     Height = 358
     Align = alClient
     DataSource = dsRazao
+    Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
     TabOrder = 0
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
@@ -30,13 +31,13 @@ inherited fSelRazao: TfSelRazao
       item
         Expanded = False
         FieldName = 'DESCRICAO'
-        Width = 266
+        Width = 242
         Visible = True
       end
       item
         Expanded = False
         FieldName = 'DATA'
-        Width = 89
+        Width = 121
         Visible = True
       end>
   end
@@ -47,9 +48,6 @@ inherited fSelRazao: TfSelRazao
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitLeft = 136
-    ExplicitTop = 192
-    ExplicitWidth = 185
     object btnSelecionar: TButton
       Left = 371
       Top = 8

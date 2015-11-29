@@ -71,7 +71,7 @@ type
   private
     { Private declarations }
     procedure Status;
-    function TestarConexao(User, Pass, DataBase: String; EhSQLServer: Boolean; Server: String = '127.0.0.1'): Boolean;
+    function TestarConexao(User, Pass, DataBase: String; EhSQLServer: Boolean; Server: String = 'localhost'): Boolean;
     procedure CarregaConfigBD;
   public
     { Public declarations }
@@ -271,7 +271,7 @@ begin
 end;
 
 function TfConexaoBD.TestarConexao(User, Pass, DataBase: String; EhSQLServer: Boolean;
-  Server: String = '127.0.0.1'): Boolean;
+  Server: String = 'localhost'): Boolean;
 begin
   FDConn.Params.Values['User_Name'] := User;
   FDConn.Params.Values['Password']  := Pass;
@@ -280,7 +280,10 @@ begin
   if EhSQLServer then
     FDConn.DriverName := 'MSSQL'
   else
+  begin
     FDConn.DriverName := 'FB';
+    FDConn.Params.Values['Server'] := EmptyStr;
+  end;
   try
     FDConn.Connected := True;
     FDConn.Connected := False;

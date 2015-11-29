@@ -8,7 +8,7 @@ object DMImportacao: TDMImportacao
     FetchOptions.RowsetSize = 1000
     FetchOptions.RecordCountMode = cmTotal
     SQL.Strings = (
-      'select distinct LAN.HISTORICO'
+      'select distinct LAN.HISTORICO, LAN.CODIGO_HISTORICO'
       'from LANCAMENTOS LAN'
       
         'inner join PLANODECONTAS PDC on LAN.CONTA_PLANOCONTAS = PDC.CONT' +
@@ -20,6 +20,10 @@ object DMImportacao: TDMImportacao
       FieldName = 'HISTORICO'
       Origin = 'HISTORICO'
       Size = 2000
+    end
+    object QueryHistoricoCODIGO_HISTORICO: TStringField
+      FieldName = 'CODIGO_HISTORICO'
+      Size = 10
     end
   end
   object QueryLancamentos: TFDQuery

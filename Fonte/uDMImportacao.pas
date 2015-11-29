@@ -22,6 +22,7 @@ type
     QueryLancamentosVALOR_DEBITO: TBCDField;
     QueryLancamentosVALOR_CREDITO: TBCDField;
     QueryLancamentosCODIGO_HISTORICO: TStringField;
+    QueryHistoricoCODIGO_HISTORICO: TStringField;
   private
     { Private declarations }
     FCodigo: Integer;
@@ -104,10 +105,25 @@ var
   var
     Qry: TFDQuery;
   begin
-    Qry := AutoQuery.NewQuery('update lancamentos set codigo_historico = :cod where historico = :hist');
+    Qry := AutoQuery.NewQuery('update lancamentos set codigo_historico = :cod where historico = :hist and codigo_historico is null');
     Qry.ParamByName('cod').AsString := aCod;
     Qry.ParamByName('hist').AsString := aHist;
     Qry.ExecSQL;
+  end;
+
+  function GetUltimoCodigoHistorico: Integer;
+  var
+    Qry: TFDQuery;
+    sql: String;
+  begin
+    sql := 'select distinct MAX(CAST(LAN.CODIGO_HISTORICO as Integer)) as CODIGO_HISTORICO '+
+           ' from LANCAMENTOS LAN                                                          '+
+           ' inner join PLANODECONTAS PDC on LAN.CONTA_PLANOCONTAS = PDC.CONTA             '+
+           ' where PDC.CODIGO_AC is not null                                               '+
+           ' order by CODIGO_HISTORICO                                                     ';
+    Qry := AutoQuery.NewQuery(sql);
+    Qry.Open;
+    Result := Qry.Fields[0].AsInteger + 1;
   end;
 
   procedure Historico;
@@ -115,7 +131,7 @@ var
     linha: String;
     codigo: Integer;
   begin
-    codigo := 1;
+    codigo := GetUltimoCodigoHistorico;
     QueryHistorico.Close;
     QueryHistorico.Open;
     QueryHistorico.First;
@@ -127,12 +143,17 @@ var
       linha := EmptyStr;
       Insert('1', linha, 1); { Registro de Dados }
       Insert('0010', linha, 2); { Identificador do Registro }
-      Insert(TFuncoes.Padr(codigo.ToString, 10), linha, 6); { Código do Histórico }
+      if QueryHistoricoCODIGO_HISTORICO.IsNull then
+      begin
+        Insert(TFuncoes.Padr(codigo.ToString, 10), linha, 6); { Código do Histórico }
+        AtualizaCodigoHistorico(codigo.ToString,QueryHistoricoHISTORICO.AsString);
+        Inc(codigo);
+      end
+      else
+        Insert(TFuncoes.Padr(QueryHistoricoCODIGO_HISTORICO.AsString, 10), linha, 6); { Código do Histórico }
       Insert(Copy(QueryHistoricoHISTORICO.AsString, 0, 40), linha, 16); { Descrição do Histórico }
       Arquivo.Add(linha);
-      AtualizaCodigoHistorico(codigo.ToString,QueryHistoricoHISTORICO.AsString);
       QueryHistorico.Next;
-      Inc(codigo);
       progress.NextProgress;
     end;
   end;
@@ -147,8 +168,7 @@ var
       Insert('1', linha, 1); { Registro de Dados }
       Insert('0040', linha, 2); { Identificador do Registro }
       Insert(TrataData(QueryLancamentosDATA.AsDateTime), linha, 6); { Data do Fato Contábil }
-      Insert(TFuncoes.Padl(QueryLancamentosNUMERO_LANCAMENTO.AsString, 10),
-        linha, 14); { Sequencial do Lançamento na Data }
+      Insert(TFuncoes.Padl(QueryLancamentosNUMERO_LANCAMENTO.AsString, 10), linha, 14); { Sequencial do Lançamento na Data }
       Insert(TFuncoes.Padl('', 10), linha, 24); { Número de Arquivo }
       Insert(TFuncoes.Padl('', 10), linha, 34); { Número do Lote }
       Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00',GetValorTotalLancamento(QueryLancamentosNUMERO_LANCAMENTO.AsString))), 15), linha, 44); { Valor Total Movimentado }
