@@ -31,6 +31,7 @@ type
     function GetCampoConta(aCampo, aConta: String): String;
     function TrocaVirgPPto(Valor: string): String;
     function GetValorTotalLancamento(const aLancamento: String): Double;
+    function AnalisaLancamento(aCod, aLan: String): Boolean;
   public
     { Public declarations }
     procedure Importar(aDir: String; aCod: Integer);
@@ -47,6 +48,22 @@ uses uDMConexao, uFuncoes, uInterfaceQuery, uFImportacao;
 
 {$R *.dfm}
 { TDMImportacao }
+
+function TDMImportacao.AnalisaLancamento(aCod, aLan: String): Boolean;
+var
+  Qry: TFDQuery;
+begin
+  Qry := AutoQuery.NewQuery('select count(LAN.NUMERO_LANCAMENTO) '+
+                            ' from LANCAMENTOS LAN '+
+                            ' inner join PLANODECONTAS PDC on LAN.CONTA_PLANOCONTAS = PDC.CONTA '+
+                            ' where PDC.CODIGO_AC is not null and '+
+                            '       LAN.CODIGO_IMPORTACAO = :COD and '+
+                            '       LAN.NUMERO_LANCAMENTO = :LAN');
+  Qry.ParamByName('COD').AsString := aCod;
+  Qry.ParamByName('LAN').AsString := aLan;
+  Qry.Open;
+  Result := Qry.Fields[0].AsInteger >= 2;
+end;
 
 function TDMImportacao.GetCampoConta(aCampo, aConta: String): String;
 var
@@ -188,33 +205,36 @@ var
 
     while not(QueryLancamentos.Eof) do
     begin
-      if lan <> QueryLancamentosNUMERO_LANCAMENTO.AsString then
+      if AnalisaLancamento(FCodigo.ToString, QueryLancamentosNUMERO_LANCAMENTO.AsString) then
       begin
-        lan := QueryLancamentosNUMERO_LANCAMENTO.AsString;
-        InserirMestre;
-      end;
+        if lan <> QueryLancamentosNUMERO_LANCAMENTO.AsString then
+        begin
+          lan := QueryLancamentosNUMERO_LANCAMENTO.AsString;
+          InserirMestre;
+        end;
 
-      linha := EmptyStr;
-      Insert('1', linha, 1); { Registro de Dados }
-      Insert('0050', linha, 2); { Identificador do Registro }
-      if QueryLancamentosVALOR_CREDITO.AsFloat > 0 then
-        Insert('C', linha, 6) { Crédito ou Debito }
-      else
-        Insert('D', linha, 6); { Crédito ou Debito }
-      Insert(TFuncoes.Padl('', 10), linha, 7); { Sequencial }
-      Insert(TFuncoes.Padl(QueryLancamentosCODIGO_AC.AsString, 15), linha, 17); { Número da Conta }
-      Insert(TFuncoes.Padl(GetCampoConta('EST_CODIGO', QueryLancamentosCODIGO_AC.AsString), 4), linha, 32); { Estabelecimento }
-      Insert(TFuncoes.Padl(GetCampoConta('CRS_CODIGO', QueryLancamentosCODIGO_AC.AsString), 15), linha, 36); { Centro de Resultado }
-      Insert(TFuncoes.Padl(QueryLancamentosCODIGO_HISTORICO.AsString, 10), linha, 51); { Código do Histórico }
-      Insert(TFuncoes.Padl('', 40), linha, 61); { }
-      if QueryLancamentosVALOR_CREDITO.AsFloat > 0 then
-        Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00', QueryLancamentosVALOR_CREDITO.AsFloat)), 15), linha, 101) { Crédito }
-      else
-        Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00', QueryLancamentosVALOR_DEBITO.AsFloat)), 15), linha, 101); { Debito }
-      Insert(TFuncoes.Padl(QueryLancamentosDOCUMENTO.AsString, 20), linha, 116); { Número do Documento }
-      Arquivo.Add(linha);
-      QueryLancamentos.Next;
-      progress.NextProgress;
+        linha := EmptyStr;
+        Insert('1', linha, 1); { Registro de Dados }
+        Insert('0050', linha, 2); { Identificador do Registro }
+        if QueryLancamentosVALOR_CREDITO.AsFloat > 0 then
+          Insert('C', linha, 6) { Crédito ou Debito }
+        else
+          Insert('D', linha, 6); { Crédito ou Debito }
+        Insert(TFuncoes.Padl('', 10), linha, 7); { Sequencial }
+        Insert(TFuncoes.Padl(QueryLancamentosCODIGO_AC.AsString, 15), linha, 17); { Número da Conta }
+        Insert(TFuncoes.Padl(GetCampoConta('EST_CODIGO', QueryLancamentosCODIGO_AC.AsString), 4), linha, 32); { Estabelecimento }
+        Insert(TFuncoes.Padl(GetCampoConta('CRS_CODIGO', QueryLancamentosCODIGO_AC.AsString), 15), linha, 36); { Centro de Resultado }
+        Insert(TFuncoes.Padl(QueryLancamentosCODIGO_HISTORICO.AsString, 10), linha, 51); { Código do Histórico }
+        Insert(TFuncoes.Padl('', 40), linha, 61); { }
+        if QueryLancamentosVALOR_CREDITO.AsFloat > 0 then
+          Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00', QueryLancamentosVALOR_CREDITO.AsFloat)), 15), linha, 101) { Crédito }
+        else
+          Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00', QueryLancamentosVALOR_DEBITO.AsFloat)), 15), linha, 101); { Debito }
+        Insert(TFuncoes.Padl(QueryLancamentosDOCUMENTO.AsString, 20), linha, 116); { Número do Documento }
+        Arquivo.Add(linha);
+        QueryLancamentos.Next;
+        progress.NextProgress;
+      end;
     end;
 
   end;
