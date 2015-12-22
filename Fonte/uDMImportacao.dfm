@@ -38,7 +38,9 @@ object DMImportacao: TDMImportacao
       '       LAN.VALOR_CREDITO, LAN.CODIGO_HISTORICO'
       'from PLANODECONTAS PDC'
       'inner join LANCAMENTOS LAN on LAN.CONTA_PLANOCONTAS = PDC.CONTA'
-      'where PDC.CODIGO_AC is not null and LAN.CODIGO_IMPORTACAO = :LAN'
+      'where PDC.CODIGO_AC is not null and '
+      '      ((LAN.VALOR_DEBITO > 0) or (LAN.VALOR_CREDITO > 0)) and'
+      '      LAN.CODIGO_IMPORTACAO = :LAN'
       
         'ORDER BY LAN.DATA, LAN.NUMERO_LANCAMENTO, LAN.VALOR_DEBITO, LAN.' +
         'VALOR_CREDITO')

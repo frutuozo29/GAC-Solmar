@@ -47,11 +47,10 @@ uses uFImportacao, uFuncoes, uInterfaceQuery, uDMConexao;
 procedure TDMRazaoAnalitica.ImportarRazao(aCod: Integer; aFile: String);
 var
   Arquivo: TextFile;
-  Linha, Conta: String;
+  Linha, Conta, DtAno: String;
   Seq, QtdeLinhas: Integer;
   Erros: TStringList;
   progress: TfImportacao;
-
 
   function LinhaValida(Linha: String): Boolean;
   begin
@@ -109,6 +108,8 @@ begin
       // Verifica se é uma linha válida para importação
       if TFuncoes.IsNumeric(Trim(TFuncoes.RemovePontos((Copy(linha, 8, 13))))) then
         Conta := Trim(TFuncoes.RemovePontos((Copy(linha, 8, 13))));
+      if (TFuncoes.IsNumeric(Trim(Copy(linha, 25, 2)))) and (DtAno = EmptyStr) then
+        DtAno := '20'+ Copy(linha, 25, 2);
 
       if LinhaValida(Linha) then
       begin
@@ -117,7 +118,7 @@ begin
         QueryRazaoAnaliticaCODIGO_IMPORTACAO.AsInteger := aCod;
         QueryRazaoAnaliticaNUMERO_LANCAMENTO.AsString := Trim(TFuncoes.RemovePontos(Copy(Linha, 0, 7)));
         QueryRazaoAnaliticaCONTA_PLANOCONTAS.AsString := Conta;
-        QueryRazaoAnaliticaDATA.AsDateTime := Now;//TFuncoes.TryStrToInt(Trim(TFuncoes.RemovePontos(Copy(Linha, 56, 5))));
+        QueryRazaoAnaliticaDATA.AsDateTime := StrToDate(Copy(linha, 14, 5) + '/'+DtAno);
         QueryRazaoAnaliticaHISTORICO.AsString := Copy(linha, 20, 36);
         QueryRazaoAnaliticaDOCUMENTO.AsString := Trim( Copy(linha, 56, 12) );
         QueryRazaoAnaliticaVALOR_DEBITO.AsFloat := TFuncoes.RetornaFloatdaString(Copy(linha, 84, 15));

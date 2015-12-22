@@ -212,7 +212,6 @@ var
           lan := QueryLancamentosNUMERO_LANCAMENTO.AsString;
           InserirMestre;
         end;
-
         linha := EmptyStr;
         Insert('1', linha, 1); { Registro de Dados }
         Insert('0050', linha, 2); { Identificador do Registro }
@@ -232,9 +231,9 @@ var
           Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00', QueryLancamentosVALOR_DEBITO.AsFloat)), 15), linha, 101); { Debito }
         Insert(TFuncoes.Padl(QueryLancamentosDOCUMENTO.AsString, 20), linha, 116); { Número do Documento }
         Arquivo.Add(linha);
-        QueryLancamentos.Next;
-        progress.NextProgress;
       end;
+      QueryLancamentos.Next;
+      progress.NextProgress;
     end;
 
   end;

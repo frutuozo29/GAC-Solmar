@@ -21,7 +21,6 @@ type
     destructor Destroy; override;
   end;
 
-
 function AutoQuery: IAutoQuery;
 function NewQuery(const SQL: string = ''): TFDQuery;
 
@@ -42,10 +41,9 @@ begin
     Result.SQL.Text := SQL;
   except
     Result.Free;
-    raise ;
+    raise;
   end;
 end;
-
 
 function TAutoQueryBase.GetQuery: TFDQuery;
 begin
