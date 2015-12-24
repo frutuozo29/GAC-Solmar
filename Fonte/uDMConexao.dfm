@@ -14,6 +14,9 @@ object DMConexao: TDMConexao
       'User_Name=sysdba'
       'Password=masterkey'
       'DriverID=FB')
+    FetchOptions.AssignedValues = [evItems, evCache]
+    FetchOptions.Items = [fiDetails]
+    FetchOptions.Cache = [fiDetails]
     LoginPrompt = False
     Left = 88
     Top = 80

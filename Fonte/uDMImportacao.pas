@@ -6,7 +6,7 @@ uses
   System.SysUtils, System.Classes, FireDAC.Stan.Intf, FireDAC.Stan.Option,
   FireDAC.Stan.Param, FireDAC.Stan.Error,
   FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Stan.Async,
-  FireDAC.DApt, Data.DB, FireDAC.Comp.DataSet,
+  FireDAC.DApt, Data.DB, FireDAC.Comp.DataSet, System.Threading,
   FireDAC.Comp.Client;
 
 type
@@ -23,6 +23,7 @@ type
     QueryLancamentosVALOR_CREDITO: TBCDField;
     QueryLancamentosCODIGO_HISTORICO: TStringField;
     QueryHistoricoCODIGO_HISTORICO: TStringField;
+    QryAtualizaHistorico: TFDQuery;
   private
     { Private declarations }
     FCodigo: Integer;
@@ -32,6 +33,7 @@ type
     function TrocaVirgPPto(Valor: string): String;
     function GetValorTotalLancamento(const aLancamento: String): Double;
     function AnalisaLancamento(aCod, aLan: String): Boolean;
+    procedure AtualizaCodigoHistorico(aCod, aHist: String);
   public
     { Public declarations }
     procedure Importar(aDir: String; aCod: Integer);
@@ -44,7 +46,7 @@ implementation
 
 { %CLASSGROUP 'Vcl.Controls.TControl' }
 
-uses uDMConexao, uFuncoes, uInterfaceQuery, uFImportacao;
+uses uDMConexao, uFuncoes, uInterfaceQuery, uFImportacao, Vcl.Dialogs;
 
 {$R *.dfm}
 { TDMImportacao }
@@ -118,16 +120,6 @@ var
     Arquivo.Add(linha);
   end;
 
-  procedure AtualizaCodigoHistorico(aCod, aHist: String);
-  var
-    Qry: TFDQuery;
-  begin
-    Qry := AutoQuery.NewQuery('update lancamentos set codigo_historico = :cod where historico = :hist and codigo_historico is null');
-    Qry.ParamByName('cod').AsString := aCod;
-    Qry.ParamByName('hist').AsString := aHist;
-    Qry.ExecSQL;
-  end;
-
   function GetUltimoCodigoHistorico: Integer;
   var
     Qry: TFDQuery;
@@ -146,18 +138,23 @@ var
   procedure Historico;
   var
     linha: String;
-    codigo: Integer;
+    codigo, count, rc: Integer;
   begin
+    count := 0;
     codigo := GetUltimoCodigoHistorico;
     QueryHistorico.Close;
+    QueryHistorico.ParamByName('LAN').AsInteger := FCodigo;
     QueryHistorico.Open;
     QueryHistorico.First;
-    progress.Inicializa(QueryHistorico.RecordCount);
+    rc := QueryHistorico.RecordCount;
+    progress.Inicializa(rc);
     progress.SetTituloImportacao('Exportando Históricos...');
 
     while not(QueryHistorico.Eof) do
     begin
+      Inc(Count);
       linha := EmptyStr;
+      progress.SetTituloImportacao('Exportando Históricos... '+ IntToStr(Count)+' de '+ IntToStr(rc));
       Insert('1', linha, 1); { Registro de Dados }
       Insert('0010', linha, 2); { Identificador do Registro }
       if QueryHistoricoCODIGO_HISTORICO.IsNull then
@@ -178,33 +175,39 @@ var
   procedure Lancamentos;
   var
     linha, lan: String;
+    count, rc: Integer;
 
     procedure InserirMestre;
+    var
+      VlTotal: Double;
     begin
       linha := EmptyStr;
+      VlTotal := GetValorTotalLancamento(QueryLancamentosNUMERO_LANCAMENTO.AsString);
       Insert('1', linha, 1); { Registro de Dados }
       Insert('0040', linha, 2); { Identificador do Registro }
       Insert(TrataData(QueryLancamentosDATA.AsDateTime), linha, 6); { Data do Fato Contábil }
       Insert(TFuncoes.Padl(QueryLancamentosNUMERO_LANCAMENTO.AsString, 10), linha, 14); { Sequencial do Lançamento na Data }
       Insert(TFuncoes.Padl('', 10), linha, 24); { Número de Arquivo }
       Insert(TFuncoes.Padl('', 10), linha, 34); { Número do Lote }
-      Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00',GetValorTotalLancamento(QueryLancamentosNUMERO_LANCAMENTO.AsString))), 15), linha, 44); { Valor Total Movimentado }
+      Insert(TFuncoes.Padl(TrocaVirgPPto(FormatFloat('0.00',VlTotal)), 15), linha, 44); { Valor Total Movimentado }
       Insert(TFuncoes.Padl(QueryLancamentosCODIGO_HISTORICO.AsString, 10), linha, 59);
       Insert(TFuncoes.Padl('', 40), linha, 69);
       Arquivo.Add(linha);
-      valorGeral := valorGeral + GetValorTotalLancamento(QueryLancamentosNUMERO_LANCAMENTO.AsString);
+      valorGeral := valorGeral + VlTotal;
     end;
 
   begin
+    count := 0;
     QueryLancamentos.Close;
     QueryLancamentos.ParamByName('LAN').AsInteger := FCodigo;
     QueryLancamentos.Open;
-
-    progress.Inicializa(QueryLancamentos.RecordCount);
-    progress.SetTituloImportacao('Exportando Lançamentos...');
+    rc := QueryLancamentos.RecordCount;
+    progress.Inicializa(rc);
 
     while not(QueryLancamentos.Eof) do
     begin
+      Inc(Count);
+      progress.SetTituloImportacao('Exportando Lançamentos '+ IntToStr(Count)+' de '+ IntToStr(rc));
       if AnalisaLancamento(FCodigo.ToString, QueryLancamentosNUMERO_LANCAMENTO.AsString) then
       begin
         if lan <> QueryLancamentosNUMERO_LANCAMENTO.AsString then
@@ -235,7 +238,6 @@ var
       QueryLancamentos.Next;
       progress.NextProgress;
     end;
-
   end;
 
   procedure Trailer;
@@ -294,5 +296,14 @@ begin
   end;
   Result := Valor;
 end;
+
+procedure TDMImportacao.AtualizaCodigoHistorico(aCod, aHist: String);
+begin
+  QryAtualizaHistorico.ParamByName('cod').AsString := aCod;
+  QryAtualizaHistorico.ParamByName('hist').AsString := aHist;
+  QryAtualizaHistorico.ParamByName('imp').AsInteger := FCodigo;
+  QryAtualizaHistorico.ExecSQL;
+end;
+
 
 end.

@@ -63,7 +63,7 @@ implementation
 
 { %CLASSGROUP 'Vcl.Controls.TControl' }
 
-uses uDMConexao, uInterfaceQuery, uFImportacao, uFuncoes, uDMImportacao;
+uses uDMConexao, uInterfaceQuery, uFImportacao, uFuncoes;
 
 {$R *.dfm}
 { TDMPlanodeContas }

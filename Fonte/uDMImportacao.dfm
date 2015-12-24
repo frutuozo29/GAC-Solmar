@@ -4,18 +4,30 @@ object DMImportacao: TDMImportacao
   Width = 423
   object QueryHistorico: TFDQuery
     Connection = DMConexao.FDConnGAC
-    FetchOptions.AssignedValues = [evMode, evItems, evRowsetSize, evCache, evRecordCountMode]
+    FetchOptions.AssignedValues = [evMode, evItems, evRowsetSize, evCache, evRecordCountMode, evUnidirectional, evCursorKind, evAutoFetchAll]
+    FetchOptions.CursorKind = ckForwardOnly
+    FetchOptions.Unidirectional = True
     FetchOptions.RowsetSize = 1000
+    FetchOptions.AutoFetchAll = afDisable
     FetchOptions.RecordCountMode = cmTotal
+    FetchOptions.Items = [fiDetails]
+    FetchOptions.Cache = [fiDetails]
     SQL.Strings = (
       'select distinct LAN.HISTORICO, LAN.CODIGO_HISTORICO'
       'from LANCAMENTOS LAN'
       
         'inner join PLANODECONTAS PDC on LAN.CONTA_PLANOCONTAS = PDC.CONT' +
         'A'
-      'where PDC.CODIGO_AC is not null')
+      'where PDC.CODIGO_AC is not null and LAN.CODIGO_IMPORTACAO = :LAN')
     Left = 88
     Top = 80
+    ParamData = <
+      item
+        Name = 'LAN'
+        DataType = ftInteger
+        ParamType = ptInput
+        Value = Null
+      end>
     object QueryHistoricoHISTORICO: TStringField
       FieldName = 'HISTORICO'
       Origin = 'HISTORICO'
@@ -28,9 +40,12 @@ object DMImportacao: TDMImportacao
   end
   object QueryLancamentos: TFDQuery
     Connection = DMConexao.FDConnGAC
-    FetchOptions.AssignedValues = [evMode, evItems, evRowsetSize, evCache, evRecordCountMode]
+    FetchOptions.AssignedValues = [evMode, evItems, evRowsetSize, evCache, evRecordCountMode, evUnidirectional, evCursorKind]
+    FetchOptions.CursorKind = ckForwardOnly
+    FetchOptions.Unidirectional = True
     FetchOptions.RowsetSize = 1000
     FetchOptions.RecordCountMode = cmTotal
+    FetchOptions.Items = [fiBlobs, fiDetails]
     SQL.Strings = (
       
         'select PDC.CODIGO_AC, LAN.NUMERO_LANCAMENTO, LAN.DATA, LAN.HISTO' +
@@ -113,5 +128,33 @@ object DMImportacao: TDMImportacao
       ReadOnly = True
       Size = 10
     end
+  end
+  object QryAtualizaHistorico: TFDQuery
+    Connection = DMConexao.FDConnGAC
+    SQL.Strings = (
+      
+        'update lancamentos set codigo_historico = :cod where historico =' +
+        ' :hist and CODIGO_IMPORTACAO = :imp and codigo_historico is null')
+    Left = 88
+    Top = 152
+    ParamData = <
+      item
+        Name = 'COD'
+        DataType = ftString
+        ParamType = ptInput
+        Value = Null
+      end
+      item
+        Name = 'HIST'
+        DataType = ftString
+        ParamType = ptInput
+        Value = Null
+      end
+      item
+        Name = 'IMP'
+        DataType = ftInteger
+        ParamType = ptInput
+        Value = Null
+      end>
   end
 end
