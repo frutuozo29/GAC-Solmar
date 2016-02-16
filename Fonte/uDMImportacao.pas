@@ -97,7 +97,7 @@ var
   Query: TFDQuery;
 begin
   try
-    Query := AutoQuery.NewQuery('select (sum(VALOR_CREDITO) + sum(VALOR_DEBITO)) / 2 from LANCAMENTOS where NUMERO_LANCAMENTO = '+ aLancamento);
+    Query := AutoQuery.NewQuery('select (sum(VALOR_CREDITO) + sum(VALOR_DEBITO)) / 2 from LANCAMENTOS where CODIGO_IMPORTACAO = '+IntToStr(FCodigo)+' and NUMERO_LANCAMENTO = '+ aLancamento);
     Query.Open;
     Result := Query.Fields[0].AsFloat;
   except
